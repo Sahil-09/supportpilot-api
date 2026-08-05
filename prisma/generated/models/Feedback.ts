@@ -234,7 +234,7 @@ export type FeedbackCreateInput = {
   from?: string | null
   createdAt?: Date | string
   deletedAt?: Date | string | null
-  aianalyzes?: Prisma.AIAnalyzeCreateNestedManyWithoutFeebackInput
+  aianalyzes?: Prisma.AIAnalyzeCreateNestedManyWithoutFeedbackInput
 }
 
 export type FeedbackUncheckedCreateInput = {
@@ -243,7 +243,7 @@ export type FeedbackUncheckedCreateInput = {
   from?: string | null
   createdAt?: Date | string
   deletedAt?: Date | string | null
-  aianalyzes?: Prisma.AIAnalyzeUncheckedCreateNestedManyWithoutFeebackInput
+  aianalyzes?: Prisma.AIAnalyzeUncheckedCreateNestedManyWithoutFeedbackInput
 }
 
 export type FeedbackUpdateInput = {
@@ -252,7 +252,7 @@ export type FeedbackUpdateInput = {
   from?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  aianalyzes?: Prisma.AIAnalyzeUpdateManyWithoutFeebackNestedInput
+  aianalyzes?: Prisma.AIAnalyzeUpdateManyWithoutFeedbackNestedInput
 }
 
 export type FeedbackUncheckedUpdateInput = {
@@ -261,7 +261,7 @@ export type FeedbackUncheckedUpdateInput = {
   from?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  aianalyzes?: Prisma.AIAnalyzeUncheckedUpdateManyWithoutFeebackNestedInput
+  aianalyzes?: Prisma.AIAnalyzeUncheckedUpdateManyWithoutFeedbackNestedInput
 }
 
 export type FeedbackCreateManyInput = {

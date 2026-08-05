@@ -17,6 +17,10 @@ model Feedback {
   createdAt    DateTime    @default(now())
   deletedAt    DateTime?
   aianalyzes   AIAnalyze[]
+
+  @@index([deletedAt])
+  @@index([from])
+  @@map("feedbacks")
 }
 
 model Document {
@@ -78,7 +82,7 @@ enum DocumentProcessingStatus {
 
 model AIAnalyze {
   id              String    @id @default(cuid())
-  feeback         Feedback  @relation(fields: [feedbackId], references: [id])
+  feedback        Feedback  @relation(fields: [feedbackId], references: [id])
   feedbackId      String
   analyze         String
   categorize      String
@@ -86,4 +90,8 @@ model AIAnalyze {
   replySuggestion String
   createdAt       DateTime  @default(now())
   deletedAt       DateTime?
+
+  @@index([deletedAt])
+  @@index([feedbackId])
+  @@map("ai_analyzes")
 }

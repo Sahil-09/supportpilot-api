@@ -7,12 +7,7 @@ export class EmbeddingEventProducerService {
     @Inject('RMQ_EMBEDDING_CLIENT') private readonly client: ClientProxy,
   ) {}
 
-  async publishFileEmbeddingEvent(payload:any){
-    // @ts-ignore
-    this.client.on('error', (err) => {
-      console.error('Error occurred while publishing embedding event:', err);
-    });
-    console.log("hits");
+  publishFileEmbeddingEvent(payload: any) {
     return this.client.emit('embedding_event', payload);
   }
 }

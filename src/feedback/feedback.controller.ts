@@ -17,16 +17,6 @@ export class FeedbackController {
     return this.feedbackService.findAll();
   }
 
-  @Get('test')
-  getTest() {
-    return this.feedbackService.testRabbitMq();
-  }
-
-  @Get('test-ai')
-  getTestAi() {
-    return this.feedbackService.testRabbitMqAi();
-  }
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.feedbackService.findOne(id);

@@ -206,7 +206,7 @@ export type AIAnalyzeWhereInput = {
   replySuggestion?: Prisma.StringFilter<"AIAnalyze"> | string
   createdAt?: Prisma.DateTimeFilter<"AIAnalyze"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"AIAnalyze"> | Date | string | null
-  feeback?: Prisma.XOR<Prisma.FeedbackScalarRelationFilter, Prisma.FeedbackWhereInput>
+  feedback?: Prisma.XOR<Prisma.FeedbackScalarRelationFilter, Prisma.FeedbackWhereInput>
 }
 
 export type AIAnalyzeOrderByWithRelationInput = {
@@ -218,7 +218,7 @@ export type AIAnalyzeOrderByWithRelationInput = {
   replySuggestion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  feeback?: Prisma.FeedbackOrderByWithRelationInput
+  feedback?: Prisma.FeedbackOrderByWithRelationInput
 }
 
 export type AIAnalyzeWhereUniqueInput = Prisma.AtLeast<{
@@ -233,7 +233,7 @@ export type AIAnalyzeWhereUniqueInput = Prisma.AtLeast<{
   replySuggestion?: Prisma.StringFilter<"AIAnalyze"> | string
   createdAt?: Prisma.DateTimeFilter<"AIAnalyze"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"AIAnalyze"> | Date | string | null
-  feeback?: Prisma.XOR<Prisma.FeedbackScalarRelationFilter, Prisma.FeedbackWhereInput>
+  feedback?: Prisma.XOR<Prisma.FeedbackScalarRelationFilter, Prisma.FeedbackWhereInput>
 }, "id">
 
 export type AIAnalyzeOrderByWithAggregationInput = {
@@ -272,7 +272,7 @@ export type AIAnalyzeCreateInput = {
   replySuggestion: string
   createdAt?: Date | string
   deletedAt?: Date | string | null
-  feeback: Prisma.FeedbackCreateNestedOneWithoutAianalyzesInput
+  feedback: Prisma.FeedbackCreateNestedOneWithoutAianalyzesInput
 }
 
 export type AIAnalyzeUncheckedCreateInput = {
@@ -294,7 +294,7 @@ export type AIAnalyzeUpdateInput = {
   replySuggestion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  feeback?: Prisma.FeedbackUpdateOneRequiredWithoutAianalyzesNestedInput
+  feedback?: Prisma.FeedbackUpdateOneRequiredWithoutAianalyzesNestedInput
 }
 
 export type AIAnalyzeUncheckedUpdateInput = {
@@ -383,49 +383,49 @@ export type AIAnalyzeMinOrderByAggregateInput = {
   deletedAt?: Prisma.SortOrder
 }
 
-export type AIAnalyzeCreateNestedManyWithoutFeebackInput = {
-  create?: Prisma.XOR<Prisma.AIAnalyzeCreateWithoutFeebackInput, Prisma.AIAnalyzeUncheckedCreateWithoutFeebackInput> | Prisma.AIAnalyzeCreateWithoutFeebackInput[] | Prisma.AIAnalyzeUncheckedCreateWithoutFeebackInput[]
-  connectOrCreate?: Prisma.AIAnalyzeCreateOrConnectWithoutFeebackInput | Prisma.AIAnalyzeCreateOrConnectWithoutFeebackInput[]
-  createMany?: Prisma.AIAnalyzeCreateManyFeebackInputEnvelope
+export type AIAnalyzeCreateNestedManyWithoutFeedbackInput = {
+  create?: Prisma.XOR<Prisma.AIAnalyzeCreateWithoutFeedbackInput, Prisma.AIAnalyzeUncheckedCreateWithoutFeedbackInput> | Prisma.AIAnalyzeCreateWithoutFeedbackInput[] | Prisma.AIAnalyzeUncheckedCreateWithoutFeedbackInput[]
+  connectOrCreate?: Prisma.AIAnalyzeCreateOrConnectWithoutFeedbackInput | Prisma.AIAnalyzeCreateOrConnectWithoutFeedbackInput[]
+  createMany?: Prisma.AIAnalyzeCreateManyFeedbackInputEnvelope
   connect?: Prisma.AIAnalyzeWhereUniqueInput | Prisma.AIAnalyzeWhereUniqueInput[]
 }
 
-export type AIAnalyzeUncheckedCreateNestedManyWithoutFeebackInput = {
-  create?: Prisma.XOR<Prisma.AIAnalyzeCreateWithoutFeebackInput, Prisma.AIAnalyzeUncheckedCreateWithoutFeebackInput> | Prisma.AIAnalyzeCreateWithoutFeebackInput[] | Prisma.AIAnalyzeUncheckedCreateWithoutFeebackInput[]
-  connectOrCreate?: Prisma.AIAnalyzeCreateOrConnectWithoutFeebackInput | Prisma.AIAnalyzeCreateOrConnectWithoutFeebackInput[]
-  createMany?: Prisma.AIAnalyzeCreateManyFeebackInputEnvelope
+export type AIAnalyzeUncheckedCreateNestedManyWithoutFeedbackInput = {
+  create?: Prisma.XOR<Prisma.AIAnalyzeCreateWithoutFeedbackInput, Prisma.AIAnalyzeUncheckedCreateWithoutFeedbackInput> | Prisma.AIAnalyzeCreateWithoutFeedbackInput[] | Prisma.AIAnalyzeUncheckedCreateWithoutFeedbackInput[]
+  connectOrCreate?: Prisma.AIAnalyzeCreateOrConnectWithoutFeedbackInput | Prisma.AIAnalyzeCreateOrConnectWithoutFeedbackInput[]
+  createMany?: Prisma.AIAnalyzeCreateManyFeedbackInputEnvelope
   connect?: Prisma.AIAnalyzeWhereUniqueInput | Prisma.AIAnalyzeWhereUniqueInput[]
 }
 
-export type AIAnalyzeUpdateManyWithoutFeebackNestedInput = {
-  create?: Prisma.XOR<Prisma.AIAnalyzeCreateWithoutFeebackInput, Prisma.AIAnalyzeUncheckedCreateWithoutFeebackInput> | Prisma.AIAnalyzeCreateWithoutFeebackInput[] | Prisma.AIAnalyzeUncheckedCreateWithoutFeebackInput[]
-  connectOrCreate?: Prisma.AIAnalyzeCreateOrConnectWithoutFeebackInput | Prisma.AIAnalyzeCreateOrConnectWithoutFeebackInput[]
-  upsert?: Prisma.AIAnalyzeUpsertWithWhereUniqueWithoutFeebackInput | Prisma.AIAnalyzeUpsertWithWhereUniqueWithoutFeebackInput[]
-  createMany?: Prisma.AIAnalyzeCreateManyFeebackInputEnvelope
+export type AIAnalyzeUpdateManyWithoutFeedbackNestedInput = {
+  create?: Prisma.XOR<Prisma.AIAnalyzeCreateWithoutFeedbackInput, Prisma.AIAnalyzeUncheckedCreateWithoutFeedbackInput> | Prisma.AIAnalyzeCreateWithoutFeedbackInput[] | Prisma.AIAnalyzeUncheckedCreateWithoutFeedbackInput[]
+  connectOrCreate?: Prisma.AIAnalyzeCreateOrConnectWithoutFeedbackInput | Prisma.AIAnalyzeCreateOrConnectWithoutFeedbackInput[]
+  upsert?: Prisma.AIAnalyzeUpsertWithWhereUniqueWithoutFeedbackInput | Prisma.AIAnalyzeUpsertWithWhereUniqueWithoutFeedbackInput[]
+  createMany?: Prisma.AIAnalyzeCreateManyFeedbackInputEnvelope
   set?: Prisma.AIAnalyzeWhereUniqueInput | Prisma.AIAnalyzeWhereUniqueInput[]
   disconnect?: Prisma.AIAnalyzeWhereUniqueInput | Prisma.AIAnalyzeWhereUniqueInput[]
   delete?: Prisma.AIAnalyzeWhereUniqueInput | Prisma.AIAnalyzeWhereUniqueInput[]
   connect?: Prisma.AIAnalyzeWhereUniqueInput | Prisma.AIAnalyzeWhereUniqueInput[]
-  update?: Prisma.AIAnalyzeUpdateWithWhereUniqueWithoutFeebackInput | Prisma.AIAnalyzeUpdateWithWhereUniqueWithoutFeebackInput[]
-  updateMany?: Prisma.AIAnalyzeUpdateManyWithWhereWithoutFeebackInput | Prisma.AIAnalyzeUpdateManyWithWhereWithoutFeebackInput[]
+  update?: Prisma.AIAnalyzeUpdateWithWhereUniqueWithoutFeedbackInput | Prisma.AIAnalyzeUpdateWithWhereUniqueWithoutFeedbackInput[]
+  updateMany?: Prisma.AIAnalyzeUpdateManyWithWhereWithoutFeedbackInput | Prisma.AIAnalyzeUpdateManyWithWhereWithoutFeedbackInput[]
   deleteMany?: Prisma.AIAnalyzeScalarWhereInput | Prisma.AIAnalyzeScalarWhereInput[]
 }
 
-export type AIAnalyzeUncheckedUpdateManyWithoutFeebackNestedInput = {
-  create?: Prisma.XOR<Prisma.AIAnalyzeCreateWithoutFeebackInput, Prisma.AIAnalyzeUncheckedCreateWithoutFeebackInput> | Prisma.AIAnalyzeCreateWithoutFeebackInput[] | Prisma.AIAnalyzeUncheckedCreateWithoutFeebackInput[]
-  connectOrCreate?: Prisma.AIAnalyzeCreateOrConnectWithoutFeebackInput | Prisma.AIAnalyzeCreateOrConnectWithoutFeebackInput[]
-  upsert?: Prisma.AIAnalyzeUpsertWithWhereUniqueWithoutFeebackInput | Prisma.AIAnalyzeUpsertWithWhereUniqueWithoutFeebackInput[]
-  createMany?: Prisma.AIAnalyzeCreateManyFeebackInputEnvelope
+export type AIAnalyzeUncheckedUpdateManyWithoutFeedbackNestedInput = {
+  create?: Prisma.XOR<Prisma.AIAnalyzeCreateWithoutFeedbackInput, Prisma.AIAnalyzeUncheckedCreateWithoutFeedbackInput> | Prisma.AIAnalyzeCreateWithoutFeedbackInput[] | Prisma.AIAnalyzeUncheckedCreateWithoutFeedbackInput[]
+  connectOrCreate?: Prisma.AIAnalyzeCreateOrConnectWithoutFeedbackInput | Prisma.AIAnalyzeCreateOrConnectWithoutFeedbackInput[]
+  upsert?: Prisma.AIAnalyzeUpsertWithWhereUniqueWithoutFeedbackInput | Prisma.AIAnalyzeUpsertWithWhereUniqueWithoutFeedbackInput[]
+  createMany?: Prisma.AIAnalyzeCreateManyFeedbackInputEnvelope
   set?: Prisma.AIAnalyzeWhereUniqueInput | Prisma.AIAnalyzeWhereUniqueInput[]
   disconnect?: Prisma.AIAnalyzeWhereUniqueInput | Prisma.AIAnalyzeWhereUniqueInput[]
   delete?: Prisma.AIAnalyzeWhereUniqueInput | Prisma.AIAnalyzeWhereUniqueInput[]
   connect?: Prisma.AIAnalyzeWhereUniqueInput | Prisma.AIAnalyzeWhereUniqueInput[]
-  update?: Prisma.AIAnalyzeUpdateWithWhereUniqueWithoutFeebackInput | Prisma.AIAnalyzeUpdateWithWhereUniqueWithoutFeebackInput[]
-  updateMany?: Prisma.AIAnalyzeUpdateManyWithWhereWithoutFeebackInput | Prisma.AIAnalyzeUpdateManyWithWhereWithoutFeebackInput[]
+  update?: Prisma.AIAnalyzeUpdateWithWhereUniqueWithoutFeedbackInput | Prisma.AIAnalyzeUpdateWithWhereUniqueWithoutFeedbackInput[]
+  updateMany?: Prisma.AIAnalyzeUpdateManyWithWhereWithoutFeedbackInput | Prisma.AIAnalyzeUpdateManyWithWhereWithoutFeedbackInput[]
   deleteMany?: Prisma.AIAnalyzeScalarWhereInput | Prisma.AIAnalyzeScalarWhereInput[]
 }
 
-export type AIAnalyzeCreateWithoutFeebackInput = {
+export type AIAnalyzeCreateWithoutFeedbackInput = {
   id?: string
   analyze: string
   categorize: string
@@ -435,7 +435,7 @@ export type AIAnalyzeCreateWithoutFeebackInput = {
   deletedAt?: Date | string | null
 }
 
-export type AIAnalyzeUncheckedCreateWithoutFeebackInput = {
+export type AIAnalyzeUncheckedCreateWithoutFeedbackInput = {
   id?: string
   analyze: string
   categorize: string
@@ -445,30 +445,30 @@ export type AIAnalyzeUncheckedCreateWithoutFeebackInput = {
   deletedAt?: Date | string | null
 }
 
-export type AIAnalyzeCreateOrConnectWithoutFeebackInput = {
+export type AIAnalyzeCreateOrConnectWithoutFeedbackInput = {
   where: Prisma.AIAnalyzeWhereUniqueInput
-  create: Prisma.XOR<Prisma.AIAnalyzeCreateWithoutFeebackInput, Prisma.AIAnalyzeUncheckedCreateWithoutFeebackInput>
+  create: Prisma.XOR<Prisma.AIAnalyzeCreateWithoutFeedbackInput, Prisma.AIAnalyzeUncheckedCreateWithoutFeedbackInput>
 }
 
-export type AIAnalyzeCreateManyFeebackInputEnvelope = {
-  data: Prisma.AIAnalyzeCreateManyFeebackInput | Prisma.AIAnalyzeCreateManyFeebackInput[]
+export type AIAnalyzeCreateManyFeedbackInputEnvelope = {
+  data: Prisma.AIAnalyzeCreateManyFeedbackInput | Prisma.AIAnalyzeCreateManyFeedbackInput[]
   skipDuplicates?: boolean
 }
 
-export type AIAnalyzeUpsertWithWhereUniqueWithoutFeebackInput = {
+export type AIAnalyzeUpsertWithWhereUniqueWithoutFeedbackInput = {
   where: Prisma.AIAnalyzeWhereUniqueInput
-  update: Prisma.XOR<Prisma.AIAnalyzeUpdateWithoutFeebackInput, Prisma.AIAnalyzeUncheckedUpdateWithoutFeebackInput>
-  create: Prisma.XOR<Prisma.AIAnalyzeCreateWithoutFeebackInput, Prisma.AIAnalyzeUncheckedCreateWithoutFeebackInput>
+  update: Prisma.XOR<Prisma.AIAnalyzeUpdateWithoutFeedbackInput, Prisma.AIAnalyzeUncheckedUpdateWithoutFeedbackInput>
+  create: Prisma.XOR<Prisma.AIAnalyzeCreateWithoutFeedbackInput, Prisma.AIAnalyzeUncheckedCreateWithoutFeedbackInput>
 }
 
-export type AIAnalyzeUpdateWithWhereUniqueWithoutFeebackInput = {
+export type AIAnalyzeUpdateWithWhereUniqueWithoutFeedbackInput = {
   where: Prisma.AIAnalyzeWhereUniqueInput
-  data: Prisma.XOR<Prisma.AIAnalyzeUpdateWithoutFeebackInput, Prisma.AIAnalyzeUncheckedUpdateWithoutFeebackInput>
+  data: Prisma.XOR<Prisma.AIAnalyzeUpdateWithoutFeedbackInput, Prisma.AIAnalyzeUncheckedUpdateWithoutFeedbackInput>
 }
 
-export type AIAnalyzeUpdateManyWithWhereWithoutFeebackInput = {
+export type AIAnalyzeUpdateManyWithWhereWithoutFeedbackInput = {
   where: Prisma.AIAnalyzeScalarWhereInput
-  data: Prisma.XOR<Prisma.AIAnalyzeUpdateManyMutationInput, Prisma.AIAnalyzeUncheckedUpdateManyWithoutFeebackInput>
+  data: Prisma.XOR<Prisma.AIAnalyzeUpdateManyMutationInput, Prisma.AIAnalyzeUncheckedUpdateManyWithoutFeedbackInput>
 }
 
 export type AIAnalyzeScalarWhereInput = {
@@ -485,7 +485,7 @@ export type AIAnalyzeScalarWhereInput = {
   deletedAt?: Prisma.DateTimeNullableFilter<"AIAnalyze"> | Date | string | null
 }
 
-export type AIAnalyzeCreateManyFeebackInput = {
+export type AIAnalyzeCreateManyFeedbackInput = {
   id?: string
   analyze: string
   categorize: string
@@ -495,7 +495,7 @@ export type AIAnalyzeCreateManyFeebackInput = {
   deletedAt?: Date | string | null
 }
 
-export type AIAnalyzeUpdateWithoutFeebackInput = {
+export type AIAnalyzeUpdateWithoutFeedbackInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   analyze?: Prisma.StringFieldUpdateOperationsInput | string
   categorize?: Prisma.StringFieldUpdateOperationsInput | string
@@ -505,7 +505,7 @@ export type AIAnalyzeUpdateWithoutFeebackInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
-export type AIAnalyzeUncheckedUpdateWithoutFeebackInput = {
+export type AIAnalyzeUncheckedUpdateWithoutFeedbackInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   analyze?: Prisma.StringFieldUpdateOperationsInput | string
   categorize?: Prisma.StringFieldUpdateOperationsInput | string
@@ -515,7 +515,7 @@ export type AIAnalyzeUncheckedUpdateWithoutFeebackInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
-export type AIAnalyzeUncheckedUpdateManyWithoutFeebackInput = {
+export type AIAnalyzeUncheckedUpdateManyWithoutFeedbackInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   analyze?: Prisma.StringFieldUpdateOperationsInput | string
   categorize?: Prisma.StringFieldUpdateOperationsInput | string
@@ -536,7 +536,7 @@ export type AIAnalyzeSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   replySuggestion?: boolean
   createdAt?: boolean
   deletedAt?: boolean
-  feeback?: boolean | Prisma.FeedbackDefaultArgs<ExtArgs>
+  feedback?: boolean | Prisma.FeedbackDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["aIAnalyze"]>
 
 export type AIAnalyzeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -548,7 +548,7 @@ export type AIAnalyzeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   replySuggestion?: boolean
   createdAt?: boolean
   deletedAt?: boolean
-  feeback?: boolean | Prisma.FeedbackDefaultArgs<ExtArgs>
+  feedback?: boolean | Prisma.FeedbackDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["aIAnalyze"]>
 
 export type AIAnalyzeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -560,7 +560,7 @@ export type AIAnalyzeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   replySuggestion?: boolean
   createdAt?: boolean
   deletedAt?: boolean
-  feeback?: boolean | Prisma.FeedbackDefaultArgs<ExtArgs>
+  feedback?: boolean | Prisma.FeedbackDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["aIAnalyze"]>
 
 export type AIAnalyzeSelectScalar = {
@@ -576,19 +576,19 @@ export type AIAnalyzeSelectScalar = {
 
 export type AIAnalyzeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "feedbackId" | "analyze" | "categorize" | "summarize" | "replySuggestion" | "createdAt" | "deletedAt", ExtArgs["result"]["aIAnalyze"]>
 export type AIAnalyzeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  feeback?: boolean | Prisma.FeedbackDefaultArgs<ExtArgs>
+  feedback?: boolean | Prisma.FeedbackDefaultArgs<ExtArgs>
 }
 export type AIAnalyzeIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  feeback?: boolean | Prisma.FeedbackDefaultArgs<ExtArgs>
+  feedback?: boolean | Prisma.FeedbackDefaultArgs<ExtArgs>
 }
 export type AIAnalyzeIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  feeback?: boolean | Prisma.FeedbackDefaultArgs<ExtArgs>
+  feedback?: boolean | Prisma.FeedbackDefaultArgs<ExtArgs>
 }
 
 export type $AIAnalyzePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "AIAnalyze"
   objects: {
-    feeback: Prisma.$FeedbackPayload<ExtArgs>
+    feedback: Prisma.$FeedbackPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -993,7 +993,7 @@ readonly fields: AIAnalyzeFieldRefs;
  */
 export interface Prisma__AIAnalyzeClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  feeback<T extends Prisma.FeedbackDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FeedbackDefaultArgs<ExtArgs>>): Prisma.Prisma__FeedbackClient<runtime.Types.Result.GetResult<Prisma.$FeedbackPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  feedback<T extends Prisma.FeedbackDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FeedbackDefaultArgs<ExtArgs>>): Prisma.Prisma__FeedbackClient<runtime.Types.Result.GetResult<Prisma.$FeedbackPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

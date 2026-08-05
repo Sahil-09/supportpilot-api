@@ -9,11 +9,17 @@ import { AiAnalyzeEventProducerService } from '../rabbitmq/ai-producer/ai-analyz
 export class FeedbackService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly eeps: EmbeddingEventProducerService,
-    private readonly aips: AiAnalyzeEventProducerService,
+    private readonly aiAnalyzeEventService: AiAnalyzeEventProducerService,
   ) {}
-  create(createFeedbackDto: any) {
-    return this.prisma.feedback.create(createFeedbackDto);
+
+  async create(createFeedbackDto: CreateFeedbackDto) {
+    const createdFeedback = await this.prisma.feedback.create({
+      data: createFeedbackDto,
+    });
+    this.aiAnalyzeEventService.publishAiAnalzyeEvent({
+      feedbackId: createdFeedback.id,
+    });
+    return { message: 'Feedback created successfully' };
   }
 
   findAll() {
@@ -34,11 +40,4 @@ export class FeedbackService {
     return `This action removes a #${id} feedback`;
   }
 
-  async testRabbitMq() {
-    await this.eeps.publishFileEmbeddingEvent({ data: 'test' });
-  }
-
-  async testRabbitMqAi() {
-    return this.aips.publishAiAnalzyeEvent({ data: 'test' });
-  }
 }

@@ -164,15 +164,10 @@ export class IngestService {
           where: { id: input.docId },
           data: { chunksNo: documents.length },
         });
+        let i: number = 0;
         for (const el of documents) {
-          const createDocChunk = await this.prismaService.documentChunk.create({
-            data: {
-              documentId: input.docId,
-              content: el.text,
-            },
-          });
           this.logger.log(
-            `Created document chunk with ID: ${createDocChunk.id} for document: ${input.docId}`,
+            `Embedded: ${i}/${documents.length} for document: ${input.docId}`,
           );
           const embeddingArray = await this.embedSingleChunkWithRetry(
             el.text,
@@ -184,9 +179,10 @@ export class IngestService {
               return isFinite(num) ? num : 0;
             })
             .join(',')}]`;
-          const updateQuery = `UPDATE "document_chunks" SET "embedding" = '${embeddingString}'::vector WHERE "id" = '${createDocChunk.id}'`;
-          await this.prismaService.$executeRawUnsafe(updateQuery);
+          const insertQuery = `INSERT INTO document_chunks (documentId, embedding, content) VALUES (${input.docId}, '${embeddingString}'::vector, '${el.text}')`;
+          await this.prismaService.$executeRawUnsafe(insertQuery);
           await this.sleep(200); // Delay for 600ms to avoid rate limiting
+          i++;
         }
         return {
           success: true,
