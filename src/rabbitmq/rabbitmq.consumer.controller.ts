@@ -11,10 +11,11 @@ export class RabbitmqConsumerController {
 
   @EventPattern('aianalyze_event')
   async handleAiAnalyzeEvent(@Payload() data: any, @Ctx() context: any) {
+    console.log('Received AI analyze event:', data);
+
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
     channel.nack(originalMsg, false, false);
-    console.log('Received AI analyze event:', data);
     // Handle the AI analyze event here
   }
 }
