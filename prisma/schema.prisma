@@ -1,0 +1,89 @@
+datasource db {
+  provider   = "postgresql"
+  extensions = [vector]
+}
+
+generator client {
+  provider        = "prisma-client"
+  output          = "./generated"
+  previewFeatures = ["postgresqlExtensions"] // 1. Add this preview feature
+  moduleFormat    = "cjs"
+}
+
+model Feedback {
+  id           String      @id @default(cuid())
+  feedBackText String
+  from         String?
+  createdAt    DateTime    @default(now())
+  deletedAt    DateTime?
+  aianalyzes   AIAnalyze[]
+}
+
+model Document {
+  id String @id @default(cuid())
+
+  uploadedBy String
+
+  fileName String
+  fileUrl  String
+  fileSize Int?
+  mimeType String?
+
+  extractedText String? @db.Text
+
+  processingStatus DocumentProcessingStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chunks DocumentChunk[]
+
+  chunksNo Int @default(0)
+
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+  @@index([uploadedBy])
+  @@map("documents")
+}
+
+model DocumentChunk {
+  id String @id @default(cuid())
+
+  documentId String
+
+  content String @db.Text
+
+  embedding Unsupported("vector(768)")?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+  @@index([documentId])
+  @@map("document_chunks")
+}
+
+enum DocumentProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model AIAnalyze {
+  id              String    @id @default(cuid())
+  feeback         Feedback  @relation(fields: [feedbackId], references: [id])
+  feedbackId      String
+  analyze         String
+  categorize      String
+  summarize       String
+  replySuggestion String
+  createdAt       DateTime  @default(now())
+  deletedAt       DateTime?
+}
