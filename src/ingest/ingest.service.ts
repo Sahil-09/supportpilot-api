@@ -54,7 +54,7 @@ export class IngestService {
         },
       });
       this.logger.log(
-        `Created document with ID: ${createdDoc.id} by user: ${userId}`,
+        `Created ${file.originalname} document with ID: ${createdDoc.id} by user: ${userId}`,
       );
       try {
         await this.ingestData().run({
@@ -76,7 +76,7 @@ export class IngestService {
         });
       } catch (e) {
         this.logger.error(
-          `Error occurred while ingesting document: ${createdDoc.id}`,
+          `Error occurred while ingesting document: ${createdDoc.id} - ${file.originalname}`,
           e,
         );
         await this.prismaService.document.update({
@@ -171,7 +171,7 @@ export class IngestService {
               content: el.text,
             },
           });
-          console.log(
+          this.logger.log(
             `Created document chunk with ID: ${createDocChunk.id} for document: ${input.docId}`,
           );
           const embeddingArray = await this.embedSingleChunkWithRetry(
@@ -186,7 +186,7 @@ export class IngestService {
             .join(',')}]`;
           const updateQuery = `UPDATE "document_chunks" SET "embedding" = '${embeddingString}'::vector WHERE "id" = '${createDocChunk.id}'`;
           await this.prismaService.$executeRawUnsafe(updateQuery);
-          await this.sleep(400); // Delay for 600ms to avoid rate limiting
+          await this.sleep(200); // Delay for 600ms to avoid rate limiting
         }
         return {
           success: true,
