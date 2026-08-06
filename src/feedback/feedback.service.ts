@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
 import { UpdateFeedbackDto } from './dto/update-feedback.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { EmbeddingEventProducerService } from '../rabbitmq/embedding-producer/embedding-event.producer.service';
 import { AiAnalyzeEventProducerService } from '../rabbitmq/ai-producer/ai-analyze-event.producer.service';
 
 @Injectable()

@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { CreateIngestDto } from './dto/create-ingest.dto';
 import { UpdateIngestDto } from './dto/update-ingest.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -10,13 +10,17 @@ import { googleAI } from '@genkit-ai/google-genai';
 import { DocumentChunk } from '../../prisma/generated/client';
 
 @Injectable()
-export class IngestService {
+export class IngestService implements OnModuleInit {
   constructor(
     private readonly prismaService: PrismaService,
     @Inject('GENKIT_AI')
     private readonly ai: Genkit,
   ) {}
   private logger = new Logger(IngestService.name);
+  private ingestDataFlow: ReturnType<typeof this.ingestData>;
+  onModuleInit(): any {
+    this.ingestDataFlow = this.ingestData();
+  }
 
   create(createIngestDto: CreateIngestDto) {
     return 'This action adds a new ingest';
@@ -41,7 +45,7 @@ export class IngestService {
   sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
   async addDocument(files: Express.Multer.File[], userId: string) {
-    const result: any = [];
+    const result: any[] = [];
     for (const file of files) {
       const pdfText = await this.extractTextFromPdf(file.buffer);
       const createdDoc = await this.prismaService.document.create({
@@ -58,7 +62,7 @@ export class IngestService {
         `Created ${file.originalname} document with ID: ${createdDoc.id} by user: ${userId}`,
       );
       try {
-        await this.ingestData().run({
+        await this.ingestDataFlow.run({
           file: file,
           docId: createdDoc.id,
           pdfText: pdfText.text,
@@ -149,24 +153,24 @@ export class IngestService {
         }),
         outputSchema: z.object({
           success: z.boolean(),
-          documentsIndexed: z.number(),
+          chunksIndexed: z.number(),
           error: z.string().optional(),
         }),
       },
       async (input) => {
         // Divide the pdf text into segments
         const chunks = chunk(input.pdfText, chunkingConfig);
-        const documents = chunks.map((text) => {
+        const formatedChunks = chunks.map((text) => {
           return Document.fromText(text, {
             meta: { fileName: input.file.originalname },
           });
         });
         await this.prismaService.document.update({
           where: { id: input.docId },
-          data: { chunksNo: documents.length },
+          data: { chunksNo: formatedChunks.length },
         });
         let i: number = 0;
-        for (const el of documents) {
+        for (const el of formatedChunks) {
           const createDocChunk: DocumentChunk =
             await this.prismaService.documentChunk.create({
               data: {
@@ -175,7 +179,7 @@ export class IngestService {
               },
             });
           this.logger.log(
-            `Embedded: ${i}/${documents.length} for document: ${input.docId}`,
+            `Embedded: ${i}/${formatedChunks.length} for document: ${input.docId}`,
           );
           const embeddingArray = await this.embedSingleChunkWithRetry(
             el.text,
@@ -193,11 +197,11 @@ export class IngestService {
           i++;
         }
         this.logger.log(
-          `Embedded: ${i}/${documents.length} for document: ${input.docId}`,
+          `Embedded: ${i}/${formatedChunks.length} for document: ${input.docId}`,
         );
         return {
           success: true,
-          documentsIndexed: documents.length,
+          chunksIndexed: formatedChunks.length,
         };
       },
     );

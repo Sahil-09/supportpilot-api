@@ -14,4 +14,12 @@ export class AiAnalyzeEventProducerService {
     });
     return this.client.emit('aianalyze_event', payload);
   }
+
+  publishAiReplySuggestionEvent(payload: any) {
+    // @ts-ignore
+    this.client.on('error', (err) => {
+      console.error('Error occurred while publishing embedding event:', err);
+    });
+    return this.client.emit('aireplysuggestion_event', payload);
+  }
 }

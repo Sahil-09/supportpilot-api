@@ -23,7 +23,10 @@ export class AiAnalyzeController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAiAnalyzeDto: UpdateAiAnalyzeDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateAiAnalyzeDto: UpdateAiAnalyzeDto,
+  ) {
     return this.aiAnalyzeService.update(+id, updateAiAnalyzeDto);
   }
 
@@ -31,4 +34,9 @@ export class AiAnalyzeController {
   remove(@Param('id') id: string) {
     return this.aiAnalyzeService.remove(+id);
   }
+  //
+  // @Get('analyze/:id')
+  // analyzeFeedback(@Param('id') id: string): any {
+  //   return this.aiAnalyzeService.analyzeFeedback(id);
+  // }
 }
