@@ -6,7 +6,7 @@ import { AIClientModule } from '../rabbitmq/ai-producer/ai-client.module';
 import { EmbeddingClientModule } from '../rabbitmq/embedding-producer/embedding-client.module';
 
 @Module({
-  imports:[PrismaModule,AIClientModule,EmbeddingClientModule],
+  imports:[PrismaModule,AIClientModule],
   controllers: [FeedbackController],
   providers: [FeedbackService],
 })

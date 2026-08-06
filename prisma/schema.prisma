@@ -11,12 +11,20 @@ generator client {
 }
 
 model Feedback {
-  id           String      @id @default(cuid())
-  feedBackText String
-  from         String?
-  createdAt    DateTime    @default(now())
-  deletedAt    DateTime?
-  aianalyzes   AIAnalyze[]
+  id              String                      @id @default(cuid())
+  feedBackText    String
+  from            String?
+  analyze         String?
+  categorize      String?
+  summarize       String?
+  replySuggestion String?
+  embedding       Unsupported("vector(768)")?
+  createdAt       DateTime                    @default(now())
+  deletedAt       DateTime?
+
+  @@index([deletedAt])
+  @@index([from])
+  @@map("feedbacks")
 }
 
 model Document {
@@ -74,16 +82,4 @@ enum DocumentProcessingStatus {
   PROCESSING
   COMPLETED
   FAILED
-}
-
-model AIAnalyze {
-  id              String    @id @default(cuid())
-  feeback         Feedback  @relation(fields: [feedbackId], references: [id])
-  feedbackId      String
-  analyze         String
-  categorize      String
-  summarize       String
-  replySuggestion String
-  createdAt       DateTime  @default(now())
-  deletedAt       DateTime?
 }
