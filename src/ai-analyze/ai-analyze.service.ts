@@ -88,9 +88,6 @@ export class AiAnalyzeService implements OnModuleInit {
   private orgData: ReturnType<typeof this.ai.defineTool>;
   private targetModel = googleAI.model('gemini-flash-lite-latest');
 
-  create(createAiAnalyzeDto: CreateAiAnalyzeDto) {
-    return 'This action adds a new aiAnalyze';
-  }
 
   findAll() {
     return `This action returns all aiAnalyze`;
@@ -354,13 +351,14 @@ export class AiAnalyzeService implements OnModuleInit {
   }
 
   async analyzeFeedback(feedbackId: string, context: RmqContext): Promise<any> {
-    const feedbackData: Feedback = await this.prismaService.feedback.findUnique({
+    const feedbackData: Feedback = await this.prismaService.feedback.findUniqueOrThrow({
       where: { id: feedbackId },
     });
-    const feedbackText: string = feedbackData?.feedBackText || '';
-    if (!feedbackText) {
+    if (!feedbackData) {
       return;
     }
+    const feedbackText: string = feedbackData?.feedBackText || '';
+
     this.logger.log('Fetched feedback message, proceeding with Analysis');
     const analyze = await this.analyzeFlow.run(feedbackText);
     this.logger.log(
