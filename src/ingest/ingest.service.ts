@@ -7,6 +7,7 @@ import { PDFParse } from 'pdf-parse';
 import { chunk } from 'llm-chunk';
 import { Document } from 'genkit/retriever';
 import { googleAI } from '@genkit-ai/google-genai';
+import { DocumentChunk } from '../../prisma/generated/client';
 
 @Injectable()
 export class IngestService {
@@ -166,6 +167,13 @@ export class IngestService {
         });
         let i: number = 0;
         for (const el of documents) {
+          const createDocChunk: DocumentChunk =
+            await this.prismaService.documentChunk.create({
+              data: {
+                documentId: input.docId,
+                content: el.text,
+              },
+            });
           this.logger.log(
             `Embedded: ${i}/${documents.length} for document: ${input.docId}`,
           );
@@ -179,11 +187,14 @@ export class IngestService {
               return isFinite(num) ? num : 0;
             })
             .join(',')}]`;
-          const insertQuery = `INSERT INTO document_chunks (documentId, embedding, content) VALUES (${input.docId}, '${embeddingString}'::vector, '${el.text}')`;
-          await this.prismaService.$executeRawUnsafe(insertQuery);
+          const updateQuery = `UPDATE "document_chunks" SET "embedding" = '${embeddingString}'::vector WHERE "id" = '${createDocChunk.id}'`;
+          await this.prismaService.$executeRawUnsafe(updateQuery);
           await this.sleep(200); // Delay for 600ms to avoid rate limiting
           i++;
         }
+        this.logger.log(
+          `Embedded: ${i}/${documents.length} for document: ${input.docId}`,
+        );
         return {
           success: true,
           documentsIndexed: documents.length,
