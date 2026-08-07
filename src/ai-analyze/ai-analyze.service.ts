@@ -88,7 +88,6 @@ export class AiAnalyzeService implements OnModuleInit {
   private orgData: ReturnType<typeof this.ai.defineTool>;
   private targetModel = googleAI.model('gemini-flash-lite-latest');
 
-
   findAll() {
     return `This action returns all aiAnalyze`;
   }
@@ -351,14 +350,17 @@ export class AiAnalyzeService implements OnModuleInit {
   }
 
   async analyzeFeedback(feedbackId: string, context: RmqContext): Promise<any> {
-    const feedbackData: Feedback = await this.prismaService.feedback.findUniqueOrThrow({
-      where: { id: feedbackId },
-    });
+    const feedbackData: Feedback =
+      await this.prismaService.feedback.findUniqueOrThrow({
+        where: { id: feedbackId },
+      });
     if (!feedbackData) {
       return;
     }
     const feedbackText: string = feedbackData?.feedBackText || '';
-
+    if (!feedbackText) {
+      throw new Error(`Feedback text is empty for feedbackId: ${feedbackId}`);
+    }
     this.logger.log('Fetched feedback message, proceeding with Analysis');
     const analyze = await this.analyzeFlow.run(feedbackText);
     this.logger.log(
@@ -374,7 +376,9 @@ export class AiAnalyzeService implements OnModuleInit {
       await this.prismaService.feedback.update({
         where: { id: feedbackId },
         data: {
-          analyze: JSON.stringify(analyze.result),
+          analyze: analyze.result.analysis,
+          sentiment: analyze.result.sentiments,
+          severity: analyze.result.severity,
           categorize: JSON.stringify(categorize.result),
           summarize: summarize.result.summary,
         },
@@ -392,23 +396,20 @@ export class AiAnalyzeService implements OnModuleInit {
       }
     }
     this.logger.log('Publish Reply Suggestion Event');
-    this.aiAnalyzeEventService.publishAiReplySuggestionEvent({
-      feedbackId: feedbackId,
-    });
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
     channel.ack(originalMsg, false, false);
+    await this.suggestReply(feedbackText, feedbackId);
     return { analyze, categorize, summarize };
   }
 
-  async suggestReply(feedbackId: string, context: RmqContext): Promise<any> {
-    const feedbackData: any = await this.prismaService.feedback.findUnique({
-      where: { id: feedbackId },
-    });
-    const feedbackText: string = feedbackData?.feedBackText || '';
+  async suggestReply(feedbackText: string, feedbackId: string): Promise<any> {
     if (!feedbackText) {
-      return;
+      throw new Error(`Feedback text is empty`);
     }
+    this.logger.log(
+      'Fetched feedback message, proceeding with Reply Suggestion',
+    );
     const replySuggestion = await this.replySuggestionFlow.run(feedbackText);
     if (replySuggestion) {
       await this.prismaService.feedback.update({
@@ -419,9 +420,6 @@ export class AiAnalyzeService implements OnModuleInit {
       });
     }
     this.logger.log('Reply Suggestion completed, and store in database');
-    const channel = context.getChannelRef();
-    const originalMsg = context.getMessage();
-    channel.ack(originalMsg, false, false);
     return replySuggestion;
   }
 }

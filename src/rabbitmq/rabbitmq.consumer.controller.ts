@@ -21,14 +21,4 @@ export class RabbitmqConsumerController {
     // Handle the AI analyze event here
   }
 
-  @EventPattern('aireplysuggestion_event')
-  handleAiReplySuggestionEvent(
-    @Payload() data: any,
-    @Ctx() context: RmqContext,
-  ) {
-    console.log('Received AI reply suggestion event:', data);
-
-    return this.aiService.suggestReply(data.feedbackId, context);
-    // Handle the AI reply suggestion event here
-  }
 }

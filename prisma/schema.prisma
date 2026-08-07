@@ -10,11 +10,30 @@ generator client {
   moduleFormat    = "cjs"
 }
 
+model User {
+  id        String     @id @default(cuid())
+  firstName String
+  lastName  String
+  fullName  String
+  email     String
+  password  String
+  createdAt DateTime   @default(now())
+  deletedAt DateTime?
+  documents Document[]
+
+  @@index([deletedAt])
+  @@index([fullName])
+  @@index([email])
+  @@map("users")
+}
+
 model Feedback {
   id              String                      @id @default(cuid())
   feedBackText    String
   from            String?
   analyze         String?
+  sentiment       String?
+  severity        String?
   categorize      String?
   summarize       String?
   replySuggestion String?
@@ -49,6 +68,8 @@ model Document {
   chunksNo Int @default(0)
 
   deletedAt DateTime?
+
+  user User @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
 
   @@index([deletedAt])
   @@index([uploadedBy])
