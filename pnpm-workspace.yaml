@@ -1,7 +1,8 @@
 allowBuilds:
   '@firebase/util': true
   '@prisma/engines': true
-  esbuild: set this to true or false
+  bcrypt: true
+  esbuild: true
   prisma: true
   protobufjs: true
   unrs-resolver: true

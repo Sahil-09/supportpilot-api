@@ -1,12 +1,9 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { CreateAiAnalyzeDto } from './dto/create-ai-analyze.dto';
-import { UpdateAiAnalyzeDto } from './dto/update-ai-analyze.dto';
 import { Genkit, RankedDocument, z } from 'genkit';
 import { PrismaService } from '../prisma/prisma.service';
 import { googleAI } from '@genkit-ai/google-genai';
 import { Feedback } from '../../prisma/generated/client';
 import { Document } from 'genkit/retriever';
-import { AiAnalyzeEventProducerService } from '../rabbitmq/ai-producer/ai-analyze-event.producer.service';
 import { RmqContext } from '@nestjs/microservices/ctx-host/rmq.context';
 
 @Injectable()
@@ -15,63 +12,12 @@ export class AiAnalyzeService implements OnModuleInit {
     @Inject('GENKIT_AI')
     private readonly ai: Genkit,
     private readonly prismaService: PrismaService,
-    private readonly aiAnalyzeEventService: AiAnalyzeEventProducerService,
   ) {}
 
   onModuleInit(): any {
     if (!this.analyzeFlow) this.analyzeFlow = this.createAnalyzeFlow();
     if (!this.orgData)
-      this.orgData = this.ai.defineTool(
-        {
-          name: 'getOrgData',
-          description: 'Gets organization about us data',
-          inputSchema: z.object({
-            query: z.string().describe('Search query'),
-          }),
-          outputSchema: z.string().describe('Output query'),
-        },
-        async (input) => {
-          const embedding = await this.ai.embed({
-            embedder: googleAI.embedder('gemini-embedding-2'),
-            content: input.query,
-            options: {
-              outputDimensionality: 768, // Reduce from 768 to 384
-            },
-          });
-          const embeddingArray: number[] = embedding[0].embedding;
-          const embeddingString = `[${embeddingArray
-            .map((v) => {
-              const num = Number(v);
-              return isFinite(num) ? num : 0;
-            })
-            .join(',')}]`;
-          const sanitizedQuery = input.query.replace(/'/g, "''");
-          const vectorQuery = `
-           SELECT id, "documentId", content, metadata, "createdAt"
-           FROM "document_chunks"
-           ORDER BY embedding <=> '${embeddingString}'::vector
-           LIMIT 10
-         `;
-          const keywordQuery = `
-           SELECT id, "documentId", content, metadata, "createdAt"
-           FROM "document_chunks"
-             WHERE to_tsvector('english', content) @@ websearch_to_tsquery('english', '${sanitizedQuery}')
-           ORDER BY ts_rank_cd(to_tsvector('english', content), websearch_to_tsquery('english', '${sanitizedQuery}')) DESC
-           LIMIT 10
-         `;
-          const [vectorDocs, keywordDocs] = await Promise.all([
-            this.prismaService.$queryRawUnsafe<RankedDocument[]>(vectorQuery),
-            this.prismaService.$queryRawUnsafe<RankedDocument[]>(keywordQuery),
-          ]);
-          this.logger.log(
-            `Found ${[vectorDocs, keywordDocs].length} similar documents`,
-          );
-          return [vectorDocs, keywordDocs]
-            .flat()
-            .map((el) => el.content)
-            .join('\n\n');
-        },
-      );
+      this.orgData = this.createOrgDataTool();
     if (!this.categorizeFlow) this.categorizeFlow = this.createCategorizeFlow();
     if (!this.summarizeFlow) this.summarizeFlow = this.createSummarizeFlow();
     if (!this.replySuggestionFlow)
@@ -87,22 +33,6 @@ export class AiAnalyzeService implements OnModuleInit {
   >;
   private orgData: ReturnType<typeof this.ai.defineTool>;
   private targetModel = googleAI.model('gemini-flash-lite-latest');
-
-  findAll() {
-    return `This action returns all aiAnalyze`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} aiAnalyze`;
-  }
-
-  update(id: number, updateAiAnalyzeDto: UpdateAiAnalyzeDto) {
-    return `This action updates a #${id} aiAnalyze`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} aiAnalyze`;
-  }
 
   createAnalyzeFlow() {
     const outputSchema = z.object({
@@ -345,6 +275,60 @@ export class AiAnalyzeService implements OnModuleInit {
           `Reply suggestion generated, proceeding to store in database`,
         );
         return response?.output!;
+      },
+    );
+  }
+
+  createOrgDataTool(){
+    return this.ai.defineTool(
+      {
+        name: 'getOrgData',
+        description: 'Gets organization about us data',
+        inputSchema: z.object({
+          query: z.string().describe('Search query'),
+        }),
+        outputSchema: z.string().describe('Output query'),
+      },
+      async (input) => {
+        const embedding = await this.ai.embed({
+          embedder: googleAI.embedder('gemini-embedding-2'),
+          content: input.query,
+          options: {
+            outputDimensionality: 768, // Reduce from 768 to 384
+          },
+        });
+        const embeddingArray: number[] = embedding[0].embedding;
+        const embeddingString = `[${embeddingArray
+          .map((v) => {
+            const num = Number(v);
+            return isFinite(num) ? num : 0;
+          })
+          .join(',')}]`;
+        const sanitizedQuery = input.query.replace(/'/g, "''");
+        const vectorQuery = `
+           SELECT id, "documentId", content, metadata, "createdAt"
+           FROM "document_chunks"
+           ORDER BY embedding <=> '${embeddingString}'::vector
+           LIMIT 10
+         `;
+        const keywordQuery = `
+           SELECT id, "documentId", content, metadata, "createdAt"
+           FROM "document_chunks"
+             WHERE to_tsvector('english', content) @@ websearch_to_tsquery('english', '${sanitizedQuery}')
+           ORDER BY ts_rank_cd(to_tsvector('english', content), websearch_to_tsquery('english', '${sanitizedQuery}')) DESC
+           LIMIT 10
+         `;
+        const [vectorDocs, keywordDocs] = await Promise.all([
+          this.prismaService.$queryRawUnsafe<RankedDocument[]>(vectorQuery),
+          this.prismaService.$queryRawUnsafe<RankedDocument[]>(keywordQuery),
+        ]);
+        this.logger.log(
+          `Found ${[vectorDocs, keywordDocs].length} similar documents`,
+        );
+        return [vectorDocs, keywordDocs]
+          .flat()
+          .map((el) => el.content)
+          .join('\n\n');
       },
     );
   }

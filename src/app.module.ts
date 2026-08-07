@@ -8,6 +8,7 @@ import { AiModule } from './ai/ai.module';
 import { ConfigModule } from '@nestjs/config';
 import { RabbitmqModule } from './rabbitmq/rabbitmq.module';
 import { AiAnalyzeModule } from './ai-analyze/ai-analyze.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AiAnalyzeModule } from './ai-analyze/ai-analyze.module';
     ConfigModule.forRoot(),
     RabbitmqModule,
     AiAnalyzeModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
