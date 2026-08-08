@@ -17,6 +17,11 @@ export class FeedbackController {
     return this.feedbackService.findAll();
   }
 
+  @Get('stats')
+  stats() {
+    return this.feedbackService.getStat();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.feedbackService.findOne(id);

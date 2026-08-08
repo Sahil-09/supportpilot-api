@@ -1,12 +1,9 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { CreateAiAnalyzeDto } from './dto/create-ai-analyze.dto';
-import { UpdateAiAnalyzeDto } from './dto/update-ai-analyze.dto';
 import { Genkit, RankedDocument, z } from 'genkit';
 import { PrismaService } from '../prisma/prisma.service';
 import { googleAI } from '@genkit-ai/google-genai';
-import { Feedback } from '../../prisma/generated/client';
+import { Feedback, Sentiments, Severity } from '../../prisma/generated/client';
 import { Document } from 'genkit/retriever';
-import { AiAnalyzeEventProducerService } from '../rabbitmq/ai-producer/ai-analyze-event.producer.service';
 import { RmqContext } from '@nestjs/microservices/ctx-host/rmq.context';
 
 @Injectable()
@@ -15,63 +12,11 @@ export class AiAnalyzeService implements OnModuleInit {
     @Inject('GENKIT_AI')
     private readonly ai: Genkit,
     private readonly prismaService: PrismaService,
-    private readonly aiAnalyzeEventService: AiAnalyzeEventProducerService,
   ) {}
 
   onModuleInit(): any {
     if (!this.analyzeFlow) this.analyzeFlow = this.createAnalyzeFlow();
-    if (!this.orgData)
-      this.orgData = this.ai.defineTool(
-        {
-          name: 'getOrgData',
-          description: 'Gets organization about us data',
-          inputSchema: z.object({
-            query: z.string().describe('Search query'),
-          }),
-          outputSchema: z.string().describe('Output query'),
-        },
-        async (input) => {
-          const embedding = await this.ai.embed({
-            embedder: googleAI.embedder('gemini-embedding-2'),
-            content: input.query,
-            options: {
-              outputDimensionality: 768, // Reduce from 768 to 384
-            },
-          });
-          const embeddingArray: number[] = embedding[0].embedding;
-          const embeddingString = `[${embeddingArray
-            .map((v) => {
-              const num = Number(v);
-              return isFinite(num) ? num : 0;
-            })
-            .join(',')}]`;
-          const sanitizedQuery = input.query.replace(/'/g, "''");
-          const vectorQuery = `
-           SELECT id, "documentId", content, metadata, "createdAt"
-           FROM "document_chunks"
-           ORDER BY embedding <=> '${embeddingString}'::vector
-           LIMIT 10
-         `;
-          const keywordQuery = `
-           SELECT id, "documentId", content, metadata, "createdAt"
-           FROM "document_chunks"
-             WHERE to_tsvector('english', content) @@ websearch_to_tsquery('english', '${sanitizedQuery}')
-           ORDER BY ts_rank_cd(to_tsvector('english', content), websearch_to_tsquery('english', '${sanitizedQuery}')) DESC
-           LIMIT 10
-         `;
-          const [vectorDocs, keywordDocs] = await Promise.all([
-            this.prismaService.$queryRawUnsafe<RankedDocument[]>(vectorQuery),
-            this.prismaService.$queryRawUnsafe<RankedDocument[]>(keywordQuery),
-          ]);
-          this.logger.log(
-            `Found ${[vectorDocs, keywordDocs].length} similar documents`,
-          );
-          return [vectorDocs, keywordDocs]
-            .flat()
-            .map((el) => el.content)
-            .join('\n\n');
-        },
-      );
+    if (!this.orgData) this.orgData = this.createOrgDataTool();
     if (!this.categorizeFlow) this.categorizeFlow = this.createCategorizeFlow();
     if (!this.summarizeFlow) this.summarizeFlow = this.createSummarizeFlow();
     if (!this.replySuggestionFlow)
@@ -88,28 +33,11 @@ export class AiAnalyzeService implements OnModuleInit {
   private orgData: ReturnType<typeof this.ai.defineTool>;
   private targetModel = googleAI.model('gemini-flash-lite-latest');
 
-
-  findAll() {
-    return `This action returns all aiAnalyze`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} aiAnalyze`;
-  }
-
-  update(id: number, updateAiAnalyzeDto: UpdateAiAnalyzeDto) {
-    return `This action updates a #${id} aiAnalyze`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} aiAnalyze`;
-  }
-
   createAnalyzeFlow() {
     const outputSchema = z.object({
       analysis: z.string(),
-      sentiments: z.enum(['positive', 'negative', 'neutral']),
-      severity: z.enum(['low', 'medium', 'high']),
+      sentiments: z.nativeEnum(Sentiments),
+      severity: z.nativeEnum(Severity),
     });
 
     return this.ai.defineFlow(
@@ -200,6 +128,7 @@ export class AiAnalyzeService implements OnModuleInit {
   createSummarizeFlow() {
     const outputSchema = z.object({
       summary: z.string(),
+      title: z.string(),
       embedded: z.array(z.number()),
     });
 
@@ -213,12 +142,13 @@ export class AiAnalyzeService implements OnModuleInit {
         const prompt = `Please summarize the following feedback: ${input}`;
         const generateOutputSchema = z.object({
           summary: z.string(),
+          title: z.string(),
         });
         const response = await this.ai.generate({
           model: this.targetModel,
           system: `You are a customer support agent for Veena World (Travel Agency Company).
           
-          Summarize the customer's primary issue.
+          Summarize the customer's primary issue & Create short title for feedback.
 
           Rules:
           - Maximum 20 words.
@@ -231,6 +161,7 @@ export class AiAnalyzeService implements OnModuleInit {
           tools: [this.orgData],
         });
         const summary: string = response.output?.summary || '';
+        const title: string = response.output?.title || '';
         this.logger.log('Summary generated, creating embedding for storage');
         let embedded: any;
         if (summary) {
@@ -243,7 +174,7 @@ export class AiAnalyzeService implements OnModuleInit {
           });
           this.logger.log('Embedding created, proceeding to store in database');
         }
-        return { summary, embedded: embedded?.[0]?.embedding || [] };
+        return { summary, title, embedded: embedded?.[0]?.embedding || [] };
       },
     );
   }
@@ -350,15 +281,72 @@ export class AiAnalyzeService implements OnModuleInit {
     );
   }
 
+  createOrgDataTool() {
+    return this.ai.defineTool(
+      {
+        name: 'getOrgData',
+        description: 'Gets organization about us data',
+        inputSchema: z.object({
+          query: z.string().describe('Search query'),
+        }),
+        outputSchema: z.string().describe('Output query'),
+      },
+      async (input) => {
+        const embedding = await this.ai.embed({
+          embedder: googleAI.embedder('gemini-embedding-2'),
+          content: input.query,
+          options: {
+            outputDimensionality: 768, // Reduce from 768 to 384
+          },
+        });
+        const embeddingArray: number[] = embedding[0].embedding;
+        const embeddingString = `[${embeddingArray
+          .map((v) => {
+            const num = Number(v);
+            return isFinite(num) ? num : 0;
+          })
+          .join(',')}]`;
+        const sanitizedQuery = input.query.replace(/'/g, "''");
+        const vectorQuery = `
+           SELECT id, "documentId", content, metadata, "createdAt"
+           FROM "document_chunks"
+           ORDER BY embedding <=> '${embeddingString}'::vector
+           LIMIT 10
+         `;
+        const keywordQuery = `
+           SELECT id, "documentId", content, metadata, "createdAt"
+           FROM "document_chunks"
+             WHERE to_tsvector('english', content) @@ websearch_to_tsquery('english', '${sanitizedQuery}')
+           ORDER BY ts_rank_cd(to_tsvector('english', content), websearch_to_tsquery('english', '${sanitizedQuery}')) DESC
+           LIMIT 10
+         `;
+        const [vectorDocs, keywordDocs] = await Promise.all([
+          this.prismaService.$queryRawUnsafe<RankedDocument[]>(vectorQuery),
+          this.prismaService.$queryRawUnsafe<RankedDocument[]>(keywordQuery),
+        ]);
+        this.logger.log(
+          `Found ${[vectorDocs, keywordDocs].length} similar documents`,
+        );
+        return [vectorDocs, keywordDocs]
+          .flat()
+          .map((el) => el.content)
+          .join('\n\n');
+      },
+    );
+  }
+
   async analyzeFeedback(feedbackId: string, context: RmqContext): Promise<any> {
-    const feedbackData: Feedback = await this.prismaService.feedback.findUniqueOrThrow({
-      where: { id: feedbackId },
-    });
+    const feedbackData: Feedback =
+      await this.prismaService.feedback.findUniqueOrThrow({
+        where: { id: feedbackId },
+      });
     if (!feedbackData) {
       return;
     }
     const feedbackText: string = feedbackData?.feedBackText || '';
-
+    if (!feedbackText) {
+      throw new Error(`Feedback text is empty for feedbackId: ${feedbackId}`);
+    }
     this.logger.log('Fetched feedback message, proceeding with Analysis');
     const analyze = await this.analyzeFlow.run(feedbackText);
     this.logger.log(
@@ -374,9 +362,12 @@ export class AiAnalyzeService implements OnModuleInit {
       await this.prismaService.feedback.update({
         where: { id: feedbackId },
         data: {
-          analyze: JSON.stringify(analyze.result),
-          categorize: JSON.stringify(categorize.result),
+          analyze: analyze.result.analysis,
+          sentiment: analyze.result.sentiments,
+          severity: analyze.result.severity,
+          categorize: categorize.result.category,
           summarize: summarize.result.summary,
+          title: summarize.result.title,
         },
       });
       if (summarize?.result?.embedded) {
@@ -392,23 +383,20 @@ export class AiAnalyzeService implements OnModuleInit {
       }
     }
     this.logger.log('Publish Reply Suggestion Event');
-    this.aiAnalyzeEventService.publishAiReplySuggestionEvent({
-      feedbackId: feedbackId,
-    });
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
     channel.ack(originalMsg, false, false);
+    await this.suggestReply(feedbackText, feedbackId);
     return { analyze, categorize, summarize };
   }
 
-  async suggestReply(feedbackId: string, context: RmqContext): Promise<any> {
-    const feedbackData: any = await this.prismaService.feedback.findUnique({
-      where: { id: feedbackId },
-    });
-    const feedbackText: string = feedbackData?.feedBackText || '';
+  async suggestReply(feedbackText: string, feedbackId: string): Promise<any> {
     if (!feedbackText) {
-      return;
+      throw new Error(`Feedback text is empty`);
     }
+    this.logger.log(
+      'Fetched feedback message, proceeding with Reply Suggestion',
+    );
     const replySuggestion = await this.replySuggestionFlow.run(feedbackText);
     if (replySuggestion) {
       await this.prismaService.feedback.update({
@@ -419,9 +407,6 @@ export class AiAnalyzeService implements OnModuleInit {
       });
     }
     this.logger.log('Reply Suggestion completed, and store in database');
-    const channel = context.getChannelRef();
-    const originalMsg = context.getMessage();
-    channel.ack(originalMsg, false, false);
     return replySuggestion;
   }
 }
