@@ -6,23 +6,23 @@ import {
   Patch,
   Param,
   Delete,
-  UseInterceptors, UploadedFile, UploadedFiles,
+  UseInterceptors,
+  UploadedFile,
+  UploadedFiles,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { IngestService } from './ingest.service';
 import { CreateIngestDto } from './dto/create-ingest.dto';
 import { UpdateIngestDto } from './dto/update-ingest.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('ingest')
 export class IngestController {
   constructor(private readonly ingestService: IngestService) {}
 
-  @Post()
-  create(@Body() createIngestDto: CreateIngestDto) {
-    return this.ingestService.create(createIngestDto);
-  }
-
-  @Get()
+  @Get('documents')
   findAll() {
     return this.ingestService.findAll();
   }
@@ -43,8 +43,18 @@ export class IngestController {
   }
 
   @Post('addDocument')
+  @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(FilesInterceptor('files'))
-  addDocument(@UploadedFiles() files: Express.Multer.File[]) {
-    return this.ingestService.addDocument(files,'null');
+  addDocument(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Req() req: { user: { userId: string } },
+  ) {
+    return this.ingestService.addDocument(files, req.user.userId);
+  }
+
+  @Post('addDocumentV2')
+  @UseInterceptors(FilesInterceptor('files'))
+  addDocumentV2(@UploadedFiles() files: Express.Multer.File[]) {
+    return this.ingestService.addDocumentV2(files, 'null');
   }
 }
