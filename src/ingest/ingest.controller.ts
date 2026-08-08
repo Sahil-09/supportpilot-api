@@ -27,21 +27,6 @@ export class IngestController {
     return this.ingestService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ingestService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateIngestDto: UpdateIngestDto) {
-    return this.ingestService.update(+id, updateIngestDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.ingestService.remove(+id);
-  }
-
   @Post('addDocument')
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(FilesInterceptor('files'))
@@ -52,9 +37,8 @@ export class IngestController {
     return this.ingestService.addDocument(files, req.user.userId);
   }
 
-  @Post('addDocumentV2')
-  @UseInterceptors(FilesInterceptor('files'))
-  addDocumentV2(@UploadedFiles() files: Express.Multer.File[]) {
-    return this.ingestService.addDocumentV2(files, 'null');
+  @Get('getDocument/:id')
+  getDocument(@Param('id') id: string) {
+    return this.ingestService.getDocumentUrl(id);
   }
 }

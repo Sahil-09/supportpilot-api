@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Genkit, RankedDocument, z } from 'genkit';
 import { PrismaService } from '../prisma/prisma.service';
 import { googleAI } from '@genkit-ai/google-genai';
-import { Feedback } from '../../prisma/generated/client';
+import { Feedback, Sentiments, Severity } from '../../prisma/generated/client';
 import { Document } from 'genkit/retriever';
 import { RmqContext } from '@nestjs/microservices/ctx-host/rmq.context';
 
@@ -16,8 +16,7 @@ export class AiAnalyzeService implements OnModuleInit {
 
   onModuleInit(): any {
     if (!this.analyzeFlow) this.analyzeFlow = this.createAnalyzeFlow();
-    if (!this.orgData)
-      this.orgData = this.createOrgDataTool();
+    if (!this.orgData) this.orgData = this.createOrgDataTool();
     if (!this.categorizeFlow) this.categorizeFlow = this.createCategorizeFlow();
     if (!this.summarizeFlow) this.summarizeFlow = this.createSummarizeFlow();
     if (!this.replySuggestionFlow)
@@ -37,8 +36,8 @@ export class AiAnalyzeService implements OnModuleInit {
   createAnalyzeFlow() {
     const outputSchema = z.object({
       analysis: z.string(),
-      sentiments: z.enum(['positive', 'negative', 'neutral']),
-      severity: z.enum(['low', 'medium', 'high']),
+      sentiments: z.nativeEnum(Sentiments),
+      severity: z.nativeEnum(Severity),
     });
 
     return this.ai.defineFlow(
@@ -129,6 +128,7 @@ export class AiAnalyzeService implements OnModuleInit {
   createSummarizeFlow() {
     const outputSchema = z.object({
       summary: z.string(),
+      title: z.string(),
       embedded: z.array(z.number()),
     });
 
@@ -142,12 +142,13 @@ export class AiAnalyzeService implements OnModuleInit {
         const prompt = `Please summarize the following feedback: ${input}`;
         const generateOutputSchema = z.object({
           summary: z.string(),
+          title: z.string(),
         });
         const response = await this.ai.generate({
           model: this.targetModel,
           system: `You are a customer support agent for Veena World (Travel Agency Company).
           
-          Summarize the customer's primary issue.
+          Summarize the customer's primary issue & Create short title for feedback.
 
           Rules:
           - Maximum 20 words.
@@ -160,6 +161,7 @@ export class AiAnalyzeService implements OnModuleInit {
           tools: [this.orgData],
         });
         const summary: string = response.output?.summary || '';
+        const title: string = response.output?.title || '';
         this.logger.log('Summary generated, creating embedding for storage');
         let embedded: any;
         if (summary) {
@@ -172,7 +174,7 @@ export class AiAnalyzeService implements OnModuleInit {
           });
           this.logger.log('Embedding created, proceeding to store in database');
         }
-        return { summary, embedded: embedded?.[0]?.embedding || [] };
+        return { summary, title, embedded: embedded?.[0]?.embedding || [] };
       },
     );
   }
@@ -279,7 +281,7 @@ export class AiAnalyzeService implements OnModuleInit {
     );
   }
 
-  createOrgDataTool(){
+  createOrgDataTool() {
     return this.ai.defineTool(
       {
         name: 'getOrgData',
@@ -363,8 +365,9 @@ export class AiAnalyzeService implements OnModuleInit {
           analyze: analyze.result.analysis,
           sentiment: analyze.result.sentiments,
           severity: analyze.result.severity,
-          categorize: JSON.stringify(categorize.result),
+          categorize: categorize.result.category,
           summarize: summarize.result.summary,
+          title: summarize.result.title,
         },
       });
       if (summarize?.result?.embedded) {

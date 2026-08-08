@@ -32,8 +32,9 @@ model Feedback {
   feedBackText    String
   from            String?
   analyze         String?
-  sentiment       String?
-  severity        String?
+  title           String?
+  sentiment       Sentiments?
+  severity        Severity?
   categorize      String?
   summarize       String?
   replySuggestion String?
@@ -52,7 +53,6 @@ model Document {
   uploadedBy String
 
   fileName String
-  fileUrl  String
   fileSize Int?
   mimeType String?
 
@@ -103,4 +103,16 @@ enum DocumentProcessingStatus {
   PROCESSING
   COMPLETED
   FAILED
+}
+
+enum Sentiments {
+  POSITIVE
+  NEGATIVE
+  NEUTRAL
+}
+
+enum Severity {
+  LOW
+  NORMAL
+  HIGH
 }

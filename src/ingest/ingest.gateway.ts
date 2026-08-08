@@ -18,7 +18,7 @@ export class IngestGateway
 {
   @WebSocketServer()
   server: Server;
-  private logger = new Logger(IngestGateway.name)
+  private logger = new Logger(IngestGateway.name);
 
   afterInit() {
     console.log(this.server);
@@ -34,16 +34,14 @@ export class IngestGateway
   }
 
   // Target a specific socket client by ID
-  emitUploadProgress(
-    socketId: string,
-    progress: {
-      id: string;
-      percentage: number;
-      embedded: number;
-      totalEmbed: number;
-    },
-  ) {
-    this.server.to(socketId).emit('uploadProgress', progress);
+  emitUploadProgress(progress: {
+    id: string;
+    status: string;
+    percentage: number;
+    embedded: number;
+    totalEmbed: number;
+  }) {
+    this.server.emit('uploadProgress', progress);
   }
 
   emitUploadComplete(socketId: string, payload: { id: string }) {

@@ -35,43 +35,32 @@ export class IngestService implements OnModuleInit {
   }
 
   findAll() {
-    return this.prismaService.document.findMany({ where: { deletedAt: null } });
+    return this.prismaService.document.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true,
+        fileName: true,
+        fileSize: true,
+        user: { select: { fullName: true } },
+        processingStatus: true,
+        createdAt: true,
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} ingest`;
-  }
-
-  update(id: number, updateIngestDto: UpdateIngestDto) {
-    return `This action updates a #${id} ingest`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} ingest`;
+  async getDocumentUrl(id) {
+    const docData = await this.prismaService.document.findUnique({
+      where: { id: id },
+    });
+    if (!docData?.fileName) {
+      throw new Error('FileName not found');
+    }
+    const url = await this.minioService.getObjectUrl(docData?.fileName);
+    return { url };
   }
 
   sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-  async addDocumentV2(files: Express.Multer.File[], userId: string) {
-    const result: any[] = [];
-    for (const file of files) {
-      // const uploadFile = await this.minioService.putBufferObject(file);
-      // const fileUrl = await this.minioService.getObjectUrl(
-      //   'Veena_World_About_Us_Summary.pdf',
-      // );
 
-      const pdfText = await this.extractTextFromFile(
-        file.originalname,
-        file.mimetype,
-        '',
-      );
-      result.push({
-        // uploadFile,
-        // fileUrl,
-        pdfText,
-      });
-    }
-    return result;
-  }
   async addDocument(files: Express.Multer.File[], userId: string) {
     for (const file of files) {
       await this.minioService.putBufferObject(file);
@@ -107,6 +96,13 @@ export class IngestService implements OnModuleInit {
         docData.mimeType || '',
         docId,
       );
+      this.ingestGateway.emitUploadProgress({
+        percentage: 1,
+        status: 'PROCESSING',
+        id: docId,
+        embedded: 0,
+        totalEmbed: 0,
+      });
       await this.ingestDataFlow.run({
         fileName: docData.fileName,
         docId: docId,
@@ -119,6 +115,13 @@ export class IngestService implements OnModuleInit {
         where: { id: docId },
         data: { processingStatus: 'COMPLETED' },
       });
+      this.ingestGateway.emitUploadProgress({
+        percentage: 100,
+        status: 'COMPLETED',
+        id: docId,
+        embedded: 0,
+        totalEmbed: 0,
+      });
       await this.sleep(5000); // Delay for 5 seconds
       const channel = context.getChannelRef();
       const message = context.getMessage();
@@ -128,6 +131,13 @@ export class IngestService implements OnModuleInit {
         `Error occurred while ingesting document: ${docId} - ${docData?.fileName}`,
         e,
       );
+      this.ingestGateway.emitUploadProgress({
+        percentage: 0,
+        status: 'FAILED',
+        id: docId,
+        embedded: 0,
+        totalEmbed: 0,
+      });
       await this.prismaService.document.update({
         where: { id: docId },
         data: { processingStatus: 'FAILED' },
@@ -225,11 +235,30 @@ export class IngestService implements OnModuleInit {
       async (input) => {
         // Divide the pdf text into segments
         const chunks = chunk(input.pdfText, chunkingConfig);
+        let percentage = 3;
+        this.ingestGateway.emitUploadProgress({
+          percentage,
+          status: 'PROCESSING',
+          id: input.docId,
+          embedded: 0,
+          totalEmbed: chunks.length,
+        });
         const formatedChunks = chunks.map((text) => {
           return Document.fromText(text, {
             meta: { fileName: input.fileName },
           });
         });
+        percentage = 5;
+        this.ingestGateway.emitUploadProgress({
+          percentage,
+          status: 'PROCESSING',
+          id: input.docId,
+          embedded: 0,
+          totalEmbed: chunks.length,
+        });
+        let basePercentage = percentage;
+        const remainingRange = 100 - basePercentage;
+        const totalChunks = formatedChunks.length; // 95
         await this.prismaService.document.update({
           where: { id: input.docId },
           data: { chunksNo: formatedChunks.length },
@@ -260,6 +289,18 @@ export class IngestService implements OnModuleInit {
           const updateQuery = `UPDATE "document_chunks" SET "embedding" = '${embeddingString}'::vector WHERE "id" = '${createDocChunk.id}'`;
           await this.prismaService.$executeRawUnsafe(updateQuery);
           await this.sleep(200); // Delay for 600ms to avoid rate limiting
+          const chunkProgress = (i / totalChunks) * remainingRange;
+          percentage = Math.min(
+            100,
+            Math.round(basePercentage + chunkProgress),
+          );
+          this.ingestGateway.emitUploadProgress({
+            percentage,
+            status: 'PROCESSING',
+            id: input.docId,
+            embedded: i,
+            totalEmbed: chunks.length,
+          });
           i++;
         }
         this.logger.log(
