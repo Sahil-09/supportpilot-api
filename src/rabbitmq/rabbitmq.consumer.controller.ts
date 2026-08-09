@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Logger } from '@nestjs/common';
 import { Ctx, EventPattern, Payload } from '@nestjs/microservices';
 import { AiAnalyzeService } from '../ai-analyze/ai-analyze.service';
 import { RmqContext } from '@nestjs/microservices/ctx-host/rmq.context';
@@ -11,12 +11,14 @@ export class RabbitmqConsumerController {
     private ingestService: IngestService,
   ) {}
 
+  private logger = new Logger()
+
   @EventPattern('embedding_event')
   handleEmbeddingEvent(
     @Payload() data: { docId: string },
     @Ctx() context: RmqContext,
   ) {
-    console.log('Received embedding event:', data);
+    this.logger.log('Received embedding event:', data);
     return this.ingestService.processingDocument(data.docId, context);
     // Handle the embedding event here
   }
@@ -26,7 +28,7 @@ export class RabbitmqConsumerController {
     @Payload() data: { feedbackId: string },
     @Ctx() context: RmqContext,
   ) {
-    console.log('Received AI analyze event:', data);
+    this.logger.log('Received AI analyze event:', data);
     return this.aiService.analyzeFeedback(data.feedbackId, context);
     // Handle the AI analyze event here
   }
@@ -36,7 +38,7 @@ export class RabbitmqConsumerController {
     @Payload() data: { feedbackId: string },
     @Ctx() context: RmqContext,
   ) {
-    console.log('Received RMQ event:', data);
+    this.logger.log('Received RMQ event:', data);
     const channel = context.getChannelRef();
     const message = context.getMessage();
     channel.ack(message, false, false);
