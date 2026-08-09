@@ -23,6 +23,11 @@ export class FeedbackController {
     return this.feedbackService.create(createFeedbackDto);
   }
 
+  @Get('rmq')
+  rmqTest() {
+    return this.feedbackService.testRmq();
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Get()
   findAll() {

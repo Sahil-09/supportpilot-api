@@ -28,7 +28,18 @@ export class RabbitmqConsumerController {
   ) {
     console.log('Received AI analyze event:', data);
     return this.aiService.analyzeFeedback(data.feedbackId, context);
+    // Handle the AI analyze event here
+  }
 
+  @EventPattern('rmq_test')
+  handleRmqTestEvent(
+    @Payload() data: { feedbackId: string },
+    @Ctx() context: RmqContext,
+  ) {
+    console.log('Received RMQ event:', data);
+    const channel = context.getChannelRef();
+    const message = context.getMessage();
+    channel.ack(message, false, false);
     // Handle the AI analyze event here
   }
 }
