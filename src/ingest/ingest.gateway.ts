@@ -21,7 +21,6 @@ export class IngestGateway
   private logger = new Logger(IngestGateway.name);
 
   afterInit() {
-    console.log(this.server);
     this.logger.log('WebSocket gateway initialized.');
   }
 
