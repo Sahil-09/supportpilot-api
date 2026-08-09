@@ -18,6 +18,7 @@ import { UpdateIngestDto } from './dto/update-ingest.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('ingest')
 export class IngestController {
   constructor(private readonly ingestService: IngestService) {}
@@ -28,7 +29,6 @@ export class IngestController {
   }
 
   @Post('addDocument')
-  @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(FilesInterceptor('files'))
   addDocument(
     @UploadedFiles() files: Express.Multer.File[],
