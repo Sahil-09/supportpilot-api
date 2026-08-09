@@ -13,7 +13,7 @@ import { CreateFeedbackDto } from './dto/create-feedback.dto';
 import { UpdateFeedbackDto } from './dto/update-feedback.dto';
 import { AuthGuard } from '@nestjs/passport';
 
-@UseGuards(AuthGuard('jwt'))
+
 @Controller('feedback')
 export class FeedbackController {
   constructor(private readonly feedbackService: FeedbackService) {}
@@ -23,21 +23,25 @@ export class FeedbackController {
     return this.feedbackService.create(createFeedbackDto);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   findAll() {
     return this.feedbackService.findAll();
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('stats')
   stats() {
     return this.feedbackService.getStat();
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.feedbackService.findOne(id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -46,6 +50,7 @@ export class FeedbackController {
     return this.feedbackService.update(+id, updateFeedbackDto);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.feedbackService.remove(+id);
