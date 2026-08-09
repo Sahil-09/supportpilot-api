@@ -22,6 +22,11 @@ export class FeedbackService {
     return { message: 'Feedback created successfully' };
   }
 
+  testRmq(){
+    console.log('rmq test');
+    return this.aiAnalyzeEventService.publishRmqTest({ data: 'test' });
+  }
+
   findAll() {
     return this.prisma.feedback.findMany({
       where: { deletedAt: null },
