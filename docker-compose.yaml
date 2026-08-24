@@ -1,0 +1,5 @@
+services:
+  support-pilot-api:
+    build: .
+    ports:
+      - 3300:3300
